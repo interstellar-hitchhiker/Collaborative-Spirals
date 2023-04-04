@@ -1,6 +1,19 @@
 let angle = 0;
 let radius = 10;
 let spiral1X, spiral1Y, spiral2X, spiral2Y;
+let words = [
+  "Reflection-in-action",
+  "is not simply a",
+  "sequence of steps,",
+  "but a spiraling",
+  "process which",
+  "proceeds by",
+  "continuous",
+  "experimentation and",
+  "self-correction.",
+  "Donald Schon, 1983",
+
+];
 
 function setup() {
   createCanvas(400, 400);
@@ -14,6 +27,17 @@ function setup() {
 function draw() {
   background(220);
   strokeWeight(2);
+
+  // Display the words
+  fill(0);
+  noStroke();
+  textSize(12);
+  textAlign(CENTER, CENTER);
+  for (let i = 0; i < words.length; i++) {
+    let x = width/2;
+    let y = height/2 + i*20 - (words.length/2)*20;
+    text(words[i], x, y);
+  }
 
   // Spiral 1 in red
   stroke(255, 0, 0);
