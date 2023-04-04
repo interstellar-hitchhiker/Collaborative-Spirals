@@ -61,3 +61,4 @@ function draw() {
     ellipse(spiral1X + radius * cos(angle * 720), spiral1Y + radius * sin(angle * 720), 20, 20);
   }
 }
+
