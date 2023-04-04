@@ -13,11 +13,11 @@ function setup() {
 
 function draw() {
   background(220);
-  stroke(0);
-  noFill();
   strokeWeight(2);
 
-  // Spiral 1
+  // Spiral 1 in red
+  stroke(255, 0, 0);
+  noFill();
   beginShape();
   for (let i = 0; i <= 720; i += 10) {
     let x = spiral1X + radius * cos(angle * i);
@@ -26,7 +26,9 @@ function draw() {
   }
   endShape();
 
-  // Spiral 2
+  // Spiral 2 in blue
+  stroke(0, 0, 255);
+  noFill();
   beginShape();
   for (let i = 0; i <= 720; i += 10) {
     let x = spiral2X + radius * cos(angle * i);
