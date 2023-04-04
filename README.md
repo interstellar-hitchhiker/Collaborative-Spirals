@@ -1,4 +1,4 @@
 # Collaborative-Spirals-A-Cosy-and-Sinful-Journey-that-Symbolises-Action-Research
 
-This code creates two spirals using polar coordinates, with each vertex calculated using the cos and sin functions. The spirals are updated on each frame by incrementing the angle and radius variables.
+This uses polar coordinates to generate the spirals. The position of each point is determined by the angle and radius values, which are calculated using the cos() and sin() functions.
 
