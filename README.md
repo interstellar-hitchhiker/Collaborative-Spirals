@@ -4,6 +4,6 @@ This uses polar coordinates to generate the spirals. The position of each point 
 
 Copy the code from here: https://github.com/interstellar-hitchhiker/Collaborative-Spirals/blob/main/P5.js%20spirals
 
-Past the code here: https://editor.p5js.org/
+Paste the code here: https://editor.p5js.org/
 
 Play 
