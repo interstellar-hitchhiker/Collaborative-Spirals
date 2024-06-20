@@ -1,9 +1,16 @@
-# Collaborative Spirals
+Collaborative Spirals
 
-This uses polar coordinates to generate the spirals. The position of each point is determined by the angle and radius values, which are calculated using the cos() and sin() functions.
+Welcome to Collaborative Spirals, an interactive visualization inspired by the concept of "Reflection-in-action" by Donald Schön. This project demonstrates a dynamic and artistic representation of reflective practice, using spirals and text to illustrate the continuous process of experimentation and self-correction.
 
-Copy the code from here: https://github.com/interstellar-hitchhiker/Collaborative-Spirals/blob/main/P5.js%20spirals
+Live Demo
 
-Paste the code here: https://editor.p5js.org/
+Check out the live demo: Collaborative Spirals
 
-Play 
+Description
+
+In this visualization, two spirals evolve and intersect while a series of reflective quotes are displayed in a pulsating manner. The project is built using the p5.js library, which makes it easy to create interactive graphics.
+
+Features
+Dynamic Spirals: Two spirals grow and rotate, creating intricate patterns.
+Interactive Text: Quotes from Donald Schön's "Reflection-in-action" appear with a pulsating effect.
+Collision Detection: The spirals change when they intersect, highlighting the point of intersection.
