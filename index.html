@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Spirals</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    let angle = 0;
+    let radius = 10;
+    let spiral1X, spiral1Y, spiral2X, spiral2Y;
+    let words = [
+      "Reflection-in-action",
+      "is not simply a",
+      "sequence of steps,",
+      "but a spiraling",
+      "process which",
+      "proceeds by",
+      "continuous",
+      "experimentation and",
+      "self-correction -",
+      "Donald Schon, 1983."
+    ];
+
+    function setup() {
+      createCanvas(400, 400);
+      angleMode(DEGREES);
+      spiral1X = width / 4;
+      spiral1Y = height / 2;
+      spiral2X = width * 3 / 4;
+      spiral2Y = height / 2;
+    }
+
+    function draw() {
+      background(220);
+      strokeWeight(2);
+
+      // Display the words with pulsating text size
+      noStroke();
+      textAlign(CENTER, CENTER);
+      for (let i = 0; i < words.length; i++) {
+        let x = width / 2;
+        let y = height / 2 + i * 20 - (words.length / 2) * 20;
+        let size = 12 + sin(frameCount / 10 + i) * 6; // Modify textSize based on sin function
+        textSize(size);
+        fill(0);
+        text(words[i], x, y);
+      }
+
+      // Spiral 1 in red
+      stroke(255, 0, 0);
+      noFill();
+      beginShape();
+      for (let i = 0; i <= 720; i += 10) {
+        let x = spiral1X + radius * cos(angle * i);
+        let y = spiral1Y + radius * sin(angle * i);
+        vertex(x, y);
+      }
+      endShape();
+
+      // Spiral 2 in blue
+      stroke(0, 0, 255);
+      noFill();
+      beginShape();
+      for (let i = 0; i <= 720; i += 10) {
+        let x = spiral2X + radius * cos(angle * i);
+        let y = spiral2Y + radius * sin(angle * i);
+        vertex(x, y);
+      }
+      endShape();
+
+      // Update angle and radius
+      angle += 0.2;
+      radius += 0.1;
+
+      // Check if the spirals intersect
+      let distance = dist(
+        spiral1X + radius * cos(angle * 720),
+        spiral1Y + radius * sin(angle * 720),
+        spiral2X + radius * cos(angle * 720),
+        spiral2Y + radius * sin(angle * 720)
+      );
+      if (distance < 20) {
+        fill(255, 0, 0);
+        ellipse(
+          spiral1X + radius * cos(angle * 720),
+          spiral1Y + radius * sin(angle * 720),
+          20,
+          20
+        );
+      }
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</body>
+</html>
