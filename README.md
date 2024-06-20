@@ -4,7 +4,7 @@ Welcome to Collaborative Spirals, an interactive visualization inspired by the c
 
 Live Demo
 
-Check out the live demo: Collaborative Spirals
+[Check out the live demo: Collaborative Spirals](https://interstellar-hitchhiker.github.io/Collaborative-Spirals/)
 
 Description
 
