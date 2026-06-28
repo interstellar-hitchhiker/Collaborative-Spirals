@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Collaborative Spirals</title>
+  <style>
+    :root {
+      --ink: #f4ead8;
+      --muted: rgba(244, 234, 216, 0.66);
+      --warm: #ffb35c;
+      --cool: #76d7ff;
+      --rose: #ff6d8a;
+      --glass: rgba(16, 20, 36, 0.48);
+      --line: rgba(244, 234, 216, 0.18);
+      --shadow: rgba(0, 0, 0, 0.36);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #090b18;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(255, 188, 105, 0.12), transparent 26%),
+        radial-gradient(circle at 22% 22%, rgba(93, 148, 255, 0.16), transparent 34%),
+        radial-gradient(circle at 76% 72%, rgba(255, 82, 137, 0.12), transparent 32%),
+        linear-gradient(160deg, #060814 0%, #101125 46%, #09080d 100%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(circle at center, black, transparent 82%);
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      cursor: default;
+    }
+
+    .title {
+      position: fixed;
+      left: 22px;
+      top: 18px;
+      z-index: 3;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(16px, 2.1vw, 25px);
+      letter-spacing: 0.045em;
+      color: rgba(244, 234, 216, 0.88);
+      text-shadow: 0 8px 28px rgba(0,0,0,0.55);
+      user-select: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .quote {
+      position: fixed;
+      left: 50%;
+      top: 57%;
+      z-index: 2;
+      width: min(760px, calc(100vw - 40px));
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      user-select: none;
+      padding: clamp(17px, 2.2vw, 27px) clamp(18px, 3vw, 42px);
+      border: 1px solid rgba(255, 235, 198, 0.18);
+      border-radius: clamp(18px, 2.8vw, 34px);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255, 201, 125, 0.10), transparent 55%),
+        linear-gradient(180deg, rgba(9, 11, 23, 0.60), rgba(6, 7, 15, 0.42));
+      box-shadow:
+        0 22px 80px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 60px rgba(255, 169, 85, 0.10);
+      backdrop-filter: blur(6px) saturate(120%);
+      -webkit-backdrop-filter: blur(6px) saturate(120%);
+      text-shadow:
+        0 2px 3px rgba(0,0,0,0.70),
+        0 9px 28px rgba(0,0,0,0.72),
+        0 0 42px rgba(255, 191, 112, 0.16);
+    }
+
+    .quote .main {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(19px, 2.62vw, 42px);
+      line-height: 1.17;
+      font-weight: 500;
+      text-wrap: balance;
+      color: rgba(255, 246, 225, 0.96);
+      -webkit-text-stroke: 0.28px rgba(7, 8, 17, 0.72);
+    }
+
+    .quote .cite {
+      margin-top: clamp(10px, 1.7vw, 19px);
+      font-size: clamp(11px, 1vw, 15px);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(255, 230, 193, 0.78);
+    }
+
+    .dock {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(8, 10, 22, 0.68);
+      box-shadow: 0 16px 42px var(--shadow), 0 0 0 1px rgba(255,255,255,0.04);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: opacity 220ms ease, transform 220ms ease;
+      user-select: none;
+    }
+
+    .dock::before {
+      content: "";
+      position: absolute;
+      inset: -18px;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    button {
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 9px 13px;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255, 246, 225, 0.92);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0.025em;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.32); }
+    button:active { transform: translateY(1px); }
+    button.on { color: #0b1020; background: linear-gradient(180deg, #ffe0a3, #ffae56); border-color: rgba(255,232,184,0.72); }
+    button.loading { color: rgba(255, 246, 225, 0.95); background: rgba(255, 177, 92, 0.16); border-color: rgba(255, 209, 145, 0.42); }
+
+    .volume {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 112px;
+      accent-color: #ffb35c;
+      cursor: pointer;
+    }
+
+    .hint {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      z-index: 5;
+      transform: translateX(-50%) translateY(8px);
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(7, 9, 17, 0.54);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255, 246, 225, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 240ms ease, transform 240ms ease;
+      white-space: nowrap;
+    }
+
+    .hint.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    body.immersive .title,
+    body.immersive .dock {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+    }
+
+    body.immersive canvas { cursor: none; }
+
+    @media (max-width: 620px) {
+      .title { left: 16px; top: 14px; }
+      .quote { top: 54%; width: calc(100vw - 26px); padding: 16px 17px; }
+      .quote .main { font-size: clamp(17px, 5.1vw, 26px); line-height: 1.19; }
+      .dock {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        justify-content: center;
+        gap: 7px;
+      }
+      button { padding: 9px 11px; font-size: 12px; }
+      input[type="range"] { width: 82px; }
+      .volume span { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stage" aria-label="Collaborative spirals animation"></canvas>
+
+  <div class="title">Collaborative Spirals</div>
+
+  <main class="quote" aria-label="Quote">
+    <p class="main">“Reflection-in-action is not simply a sequence of steps, but a spiraling process which proceeds by continuous experimentation and self-correction.”</p>
+    <div class="cite">Donald Schön · 1983</div>
+  </main>
+
+  <div class="dock" aria-label="Audio and fullscreen controls">
+    <button id="soundBtn" type="button">Start stream</button>
+    <label class="volume"><span>Volume</span><input id="volume" type="range" min="0" max="1" step="0.01" value="0.55" /></label>
+    <button id="fullBtn" type="button">Full screen</button>
+  </div>
+
+  <div id="hint" class="hint">move / tap / key to return</div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const canvas = document.getElementById('stage');
+      const ctx = canvas.getContext('2d', { alpha: false });
+      const soundBtn = document.getElementById('soundBtn');
+      const volume = document.getElementById('volume');
+      const fullBtn = document.getElementById('fullBtn');
+      const hint = document.getElementById('hint');
+      const quote = document.querySelector('.quote');
+
+      const TAU = Math.PI * 2;
+      const streams = [
+        'https://bassdrive.radioca.st/stream',
+        'https://ice.bassdrive.net/stream',
+        'https://chi2.bassdrive.net/stream',
+        'https://ice.bassdrive.net/stream56'
+      ];
+
+      let W = 1;
+      let H = 1;
+      let DPR = 1;
+      let t = 0;
+      let last = performance.now();
+      let paused = false;
+      let streamIndex = 0;
+      let audioOn = false;
+      let audioStarting = false;
+      let immersive = false;
+      let immersiveAt = 0;
+      let beatPhase = 0;
+      let burst = 0;
+      let mouse = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, active: false };
+      let ripples = [];
+      let sparks = [];
+      let stars = [];
+
+      const audio = new Audio();
+      audio.preload = 'none';
+      audio.volume = Number(volume.value);
+      audio.playsInline = true;
+
+      function resize() {
+        DPR = Math.min(window.devicePixelRatio || 1, 2);
+        W = Math.floor(window.innerWidth);
+        H = Math.floor(window.innerHeight);
+        canvas.width = Math.floor(W * DPR);
+        canvas.height = Math.floor(H * DPR);
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        makeStars();
+      }
+
+      function makeStars() {
+        const count = Math.floor(Math.min(260, Math.max(120, (W * H) / 9000)));
+        stars = Array.from({ length: count }, () => ({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: 0.35 + Math.random() * 1.55,
+          a: 0.15 + Math.random() * 0.64,
+          p: Math.random() * TAU,
+          drift: 0.05 + Math.random() * 0.22
+        }));
+      }
+
+      function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+      function lerp(a, b, f) { return a + (b - a) * f; }
+      function ease(v) { return v * v * (3 - 2 * v); }
+      function wave(base, amp, speed, phase) { return base + amp * Math.sin(t * speed + phase); }
+
+      function setSoundButton(text, state) {
+        soundBtn.textContent = text;
+        soundBtn.classList.toggle('on', state === 'playing');
+        soundBtn.classList.toggle('loading', state === 'loading');
+      }
+
+      async function startStream() {
+        if (audioStarting || audioOn) return;
+        audioStarting = true;
+        setSoundButton('Starting…', 'loading');
+        audio.volume = Number(volume.value);
+
+        for (let i = 0; i < streams.length; i++) {
+          streamIndex = i;
+          audio.pause();
+          audio.src = streams[i];
+          audio.load();
+          try {
+            await audio.play();
+            audioOn = true;
+            audioStarting = false;
+            setSoundButton('Stop stream', 'playing');
+            flashHint('stream playing');
+            return;
+          } catch (err) {
+            audio.pause();
+            audio.removeAttribute('src');
+            audio.load();
+          }
+        }
+
+        audioOn = false;
+        audioStarting = false;
+        setSoundButton('Start stream', 'stopped');
+        flashHint('stream blocked or unavailable');
+      }
+
+      function stopStream() {
+        audioOn = false;
+        audioStarting = false;
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+        setSoundButton('Start stream', 'stopped');
+      }
+
+      function flashHint(text) {
+        hint.textContent = text;
+        hint.classList.add('show');
+        clearTimeout(flashHint.timer);
+        flashHint.timer = setTimeout(() => hint.classList.remove('show'), 1700);
+      }
+
+      function pointerMove(x, y) {
+        if (immersive && performance.now() - immersiveAt > 800) {
+          leaveImmersive();
+          return;
+        }
+        mouse.tx = clamp(x / W, 0, 1);
+        mouse.ty = clamp(y / H, 0, 1);
+        mouse.active = true;
+      }
+
+      function addRipple(x, y, strength = 1) {
+        ripples.push({ x, y, r: 0, life: 1, strength });
+      }
+
+      async function enterImmersive() {
+        immersive = true;
+        immersiveAt = performance.now();
+        document.body.classList.add('immersive');
+        flashHint('move / tap / key to return');
+        try {
+          if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+          }
+        } catch (err) {
+          // The visual immersive mode still works when browser fullscreen is denied.
+        }
+      }
+
+      async function leaveImmersive() {
+        immersive = false;
+        document.body.classList.remove('immersive');
+        hint.classList.remove('show');
+        try {
+          if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
+        } catch (err) {}
+      }
+
+      function drawBackground(dt) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = `rgba(6, 8, 18, ${wave(0.135, 0.055, 0.21, 1.1)})`;
+        ctx.fillRect(0, 0, W, H);
+
+        const g = ctx.createRadialGradient(W * 0.5, H * 0.48, 0, W * 0.5, H * 0.48, Math.max(W, H) * 0.72);
+        g.addColorStop(0, 'rgba(37, 32, 56, 0.25)');
+        g.addColorStop(0.45, 'rgba(10, 12, 28, 0.18)');
+        g.addColorStop(1, 'rgba(2, 3, 8, 0.54)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (const s of stars) {
+          s.p += dt * s.drift;
+          const a = s.a * (0.55 + 0.45 * Math.sin(s.p + t * 0.8));
+          ctx.fillStyle = `rgba(255, 238, 204, ${a})`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, TAU);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function spiralPoints(cx, cy, hand, timeOffset, mods) {
+        const points = [];
+        const maxTheta = TAU * (4.4 + mods.coils);
+        const step = 0.055;
+        const reach = mods.reach;
+        const breathe = 1 + 0.045 * Math.sin(t * 1.1 + timeOffset);
+        const bendX = (mouse.x - 0.5) * W * 0.13;
+        const bendY = (mouse.y - 0.5) * H * 0.12;
+
+        for (let a = 0; a <= maxTheta; a += step) {
+          const u = a / maxTheta;
+          const twist = a * hand + t * mods.speed + timeOffset + Math.sin(t * 0.33 + u * 8) * mods.wobble;
+          const r = reach * Math.pow(u, 0.86) * breathe;
+          const pull = Math.pow(u, 1.8);
+          const orbit = Math.sin(t * 0.48 + timeOffset) * 0.12;
+          const x = cx + Math.cos(twist + orbit) * r + Math.sin(u * Math.PI) * bendX * pull;
+          const y = cy + Math.sin(twist - orbit) * r + Math.sin(u * Math.PI) * bendY * pull;
+          points.push({ x, y, u });
+        }
+        return points;
+      }
+
+      function drawSpiral(points, colorA, colorB, width, aura) {
+        if (points.length < 2) return;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        ctx.strokeStyle = colorB;
+        ctx.globalAlpha = aura;
+        ctx.lineWidth = width * 4.4;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        const grad = ctx.createLinearGradient(points[0].x, points[0].y, points[points.length - 1].x, points[points.length - 1].y);
+        grad.addColorStop(0, colorA);
+        grad.addColorStop(1, colorB);
+        ctx.globalAlpha = 0.82;
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = width;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function findIntersection(a, b) {
+        let best = { d: Infinity, x: W / 2, y: H / 2 };
+        const stride = 5;
+        for (let i = 8; i < a.length; i += stride) {
+          for (let j = 8; j < b.length; j += stride) {
+            const dx = a[i].x - b[j].x;
+            const dy = a[i].y - b[j].y;
+            const d = dx * dx + dy * dy;
+            if (d < best.d) {
+              best = { d, x: (a[i].x + b[j].x) / 2, y: (a[i].y + b[j].y) / 2 };
+            }
+          }
+        }
+        return best;
+      }
+
+      function drawIntersection(hit, dt) {
+        const near = Math.sqrt(hit.d);
+        const threshold = Math.min(W, H) * (0.052 + 0.016 * Math.sin(t * 0.7));
+        if (near < threshold) {
+          burst = Math.min(1, burst + dt * 4.5);
+          if (Math.random() < 0.28) {
+            sparks.push({
+              x: hit.x,
+              y: hit.y,
+              vx: (Math.random() - 0.5) * 2.7,
+              vy: (Math.random() - 0.5) * 2.7,
+              life: 1,
+              r: 1 + Math.random() * 2.8
+            });
+          }
+        } else {
+          burst = Math.max(0, burst - dt * 1.7);
+        }
+
+        const glow = 0.18 + burst * 0.82;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const rg = ctx.createRadialGradient(hit.x, hit.y, 0, hit.x, hit.y, 92 + burst * 120);
+        rg.addColorStop(0, `rgba(255, 235, 171, ${0.52 * glow})`);
+        rg.addColorStop(0.25, `rgba(255, 150, 91, ${0.26 * glow})`);
+        rg.addColorStop(1, 'rgba(255, 150, 91, 0)');
+        ctx.fillStyle = rg;
+        ctx.beginPath();
+        ctx.arc(hit.x, hit.y, 92 + burst * 120, 0, TAU);
+        ctx.fill();
+
+        ctx.strokeStyle = `rgba(255, 239, 195, ${0.35 + 0.45 * burst})`;
+        ctx.lineWidth = 1.6 + burst * 3.5;
+        ctx.beginPath();
+        ctx.arc(hit.x, hit.y, 10 + burst * 32 + Math.sin(t * 7) * 4, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawRipples(dt) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ripples = ripples.filter(r => r.life > 0.01);
+        for (const r of ripples) {
+          r.r += dt * 170 * r.strength;
+          r.life *= Math.pow(0.035, dt);
+          ctx.strokeStyle = `rgba(255, 219, 155, ${0.35 * r.life})`;
+          ctx.lineWidth = 1 + r.life * 2;
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, r.r, 0, TAU);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawSparks(dt) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        sparks = sparks.filter(p => p.life > 0.02);
+        for (const p of sparks) {
+          p.x += p.vx * 60 * dt;
+          p.y += p.vy * 60 * dt;
+          p.vx *= Math.pow(0.12, dt);
+          p.vy *= Math.pow(0.12, dt);
+          p.life *= Math.pow(0.045, dt);
+          ctx.fillStyle = `rgba(255, 231, 169, ${p.life})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, TAU);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function updateQuote() {
+        const pulse = 0.985 + 0.015 * Math.sin(t * 1.15) + burst * 0.018;
+        const bright = 0.88 + burst * 0.08;
+        quote.style.transform = `translate(-50%, -50%) scale(${pulse.toFixed(4)})`;
+        quote.style.opacity = String(clamp(bright, 0.82, 0.98));
+      }
+
+      function frame(now) {
+        requestAnimationFrame(frame);
+        const rawDt = Math.min(0.05, (now - last) / 1000 || 0.016);
+        last = now;
+        if (paused) return;
+        const dt = rawDt;
+        t += dt;
+
+        mouse.x = lerp(mouse.x, mouse.tx, 0.045);
+        mouse.y = lerp(mouse.y, mouse.ty, 0.045);
+
+        beatPhase += dt * 174 / 60;
+        if (beatPhase >= 1) {
+          beatPhase %= 1;
+          if (audioOn && !audio.paused && Math.random() < 0.5) addRipple(W * (0.35 + Math.random() * 0.3), H * (0.42 + Math.random() * 0.22), 0.45);
+        }
+
+        const beat = Math.pow(1 - beatPhase, 7) * (audioOn && !audio.paused ? 1 : 0.25);
+        drawBackground(dt);
+
+        const centerShift = Math.sin(t * 0.17) * W * 0.035;
+        const split = Math.min(W * 0.18, 190 + Math.sin(t * 0.23) * 38);
+        const cy = H * (0.5 + Math.sin(t * 0.13) * 0.025);
+
+        const mods = {
+          speed: wave(0.34, 0.18, 0.19, 0.2),
+          reach: Math.min(W, H) * wave(0.315, 0.075, 0.11, 2.3) * (1 + beat * 0.026),
+          coils: wave(1.1, 0.72, 0.09, 1.7),
+          wobble: wave(0.22, 0.18, 0.15, 3.1)
+        };
+
+        const left = spiralPoints(W * 0.5 - split + centerShift, cy, 1, t * 0.09, mods);
+        const right = spiralPoints(W * 0.5 + split + centerShift, cy, -1, Math.PI + t * 0.07, {
+          speed: mods.speed * 0.92,
+          reach: mods.reach * wave(1.02, 0.08, 0.14, 0.6),
+          coils: mods.coils * wave(1.03, 0.08, 0.12, 2.2),
+          wobble: mods.wobble * 1.14
+        });
+
+        const width = Math.max(1.2, Math.min(W, H) * 0.0043) * (1 + beat * 0.25);
+        drawSpiral(left, 'rgba(255, 144, 93, 0.92)', 'rgba(255, 205, 104, 0.74)', width, 0.105 + beat * 0.085);
+        drawSpiral(right, 'rgba(109, 212, 255, 0.86)', 'rgba(166, 121, 255, 0.72)', width, 0.105 + beat * 0.085);
+
+        const hit = findIntersection(left, right);
+        drawIntersection(hit, dt);
+        drawRipples(dt);
+        drawSparks(dt);
+        updateQuote();
+      }
+
+      soundBtn.addEventListener('click', () => {
+        if (audioOn || audioStarting) stopStream();
+        else startStream();
+      });
+
+      volume.addEventListener('input', () => {
+        audio.volume = Number(volume.value);
+      });
+
+      audio.addEventListener('playing', () => {
+        if (audioStarting || audioOn) {
+          audioOn = true;
+          audioStarting = false;
+          setSoundButton('Stop stream', 'playing');
+        }
+      });
+      audio.addEventListener('pause', () => {
+        if (!audioOn && !audioStarting) setSoundButton('Start stream', 'stopped');
+      });
+      audio.addEventListener('waiting', () => {
+        if (audioOn) setSoundButton('Buffering…', 'loading');
+      });
+      audio.addEventListener('canplay', () => {
+        if (audioOn) setSoundButton('Stop stream', 'playing');
+      });
+      audio.addEventListener('error', () => {
+        if (!audioOn && !audioStarting) return;
+        streamIndex += 1;
+        if (streamIndex < streams.length) {
+          audio.src = streams[streamIndex];
+          audio.load();
+          audio.play().catch(() => {
+            stopStream();
+            flashHint('stream blocked or unavailable');
+          });
+        } else {
+          stopStream();
+          flashHint('stream blocked or unavailable');
+        }
+      });
+
+      fullBtn.addEventListener('click', enterImmersive);
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('mousemove', e => pointerMove(e.clientX, e.clientY), { passive: true });
+      window.addEventListener('pointerdown', e => {
+        if (immersive && performance.now() - immersiveAt > 800) {
+          leaveImmersive();
+          return;
+        }
+        pointerMove(e.clientX, e.clientY);
+        addRipple(e.clientX, e.clientY, 1.1);
+      }, { passive: true });
+      window.addEventListener('touchstart', e => {
+        const touch = e.touches && e.touches[0];
+        if (immersive && performance.now() - immersiveAt > 800) {
+          leaveImmersive();
+          return;
+        }
+        if (touch) {
+          pointerMove(touch.clientX, touch.clientY);
+          addRipple(touch.clientX, touch.clientY, 1.1);
+        }
+      }, { passive: true });
+      window.addEventListener('keydown', e => {
+        if (immersive && performance.now() - immersiveAt > 800) {
+          leaveImmersive();
+          return;
+        }
+        const key = e.key.toLowerCase();
+        if (key === ' ' || key === 'spacebar') {
+          e.preventDefault();
+          paused = !paused;
+        } else if (key === 's') {
+          if (audioOn || audioStarting) stopStream();
+          else startStream();
+        } else if (key === 'f') {
+          enterImmersive();
+        } else if (key === 'escape') {
+          leaveImmersive();
+        }
+      });
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && immersive) leaveImmersive();
+      });
+
+      resize();
+      ctx.fillStyle = '#070914';
+      ctx.fillRect(0, 0, W, H);
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>
+
