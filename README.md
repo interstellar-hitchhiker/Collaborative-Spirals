@@ -1,16 +1,7 @@
-Collaborative Spirals
+# Collaborative Spirals
 
-Welcome to Collaborative Spirals, an interactive visualization inspired by the concept of "Reflection-in-action" by Donald Schön. This project demonstrates a dynamic and artistic representation of reflective practice, using spirals and text to illustrate the continuous process of experimentation and self-correction.
+Version one of **Collaborative Spirals** began as a simple p5.js sketch: two animated spirals, a pulsating reflection quote, and a basic visual collision effect. It has now evolved into a polished single-file HTML artwork, with the spirals, central Donald Schön quote, atmospheric background, optional DnB stream, fullscreen mode, and all styling and logic contained in one portable `index.html` file.
 
-Live Demo
+The project remains inspired by Schön’s idea of **reflection-in-action**: not a fixed sequence of steps, but a living spiral of experimentation, response, and self-correction.
 
-[Check out the live demo: Collaborative Spirals](https://interstellar-hitchhiker.github.io/Collaborative-Spirals/)
-
-Description
-
-In this visualization, two spirals evolve and intersect while a series of reflective quotes are displayed in a pulsating manner. The project is built using the p5.js library, which makes it easy to create interactive graphics.
-
-Features
-Dynamic Spirals: Two spirals grow and rotate, creating intricate patterns.
-Interactive Text: Quotes from Donald Schön's "Reflection-in-action" appear with a pulsating effect.
-Collision Detection: The spirals change when they intersect, highlighting the point of intersection.
+https://interstellar-hitchhiker.github.io/Collaborative-Spirals/
